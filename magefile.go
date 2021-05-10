@@ -5,9 +5,10 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
+	// "os/exec"
 
 	"github.com/magefile/mage/mg" // mg contains helpful utility functions, like Deps
+	"github.com/magefile/mage/sh"
 )
 
 // Default target to run when none is specified
@@ -18,15 +19,17 @@ import (
 func Build() error {
 	mg.Deps(InstallDeps)
 	fmt.Println("Building...")
-	cmd := exec.Command("go", "build", "-o", "todo_app", ".")
-	return cmd.Run()
+	// cmd := exec.Command("go", "build", "-o", "todo_app", ".")
+	return sh.Run("go", "build", "-o", "todo_app", ".")
+	// return cmd.Run()
 }
 
 func Start() error {
 	mg.Deps(Build)
 	fmt.Println("Running todo_app api...")
-	cmd := exec.Command("./todo_app")
-	return cmd.Run()
+	// cmd := exec.Command("./todo_app")
+	return sh.Run("./todo_app")
+	// return cmd.Run()
 }
 
 // A custom install step if you need your bin someplace other than go/bin
@@ -39,8 +42,9 @@ func Install() error {
 // Manage your deps, or running package managers.
 func InstallDeps() error {
 	fmt.Println("Installing Deps...")
-	cmd := exec.Command("go", "mod", "tidy")
-	return cmd.Run()
+	return sh.Run("go", "mod", "tidy")
+	// cmd := exec.Command("go", "mod", "tidy")
+	// return cmd.Run()
 }
 
 // Clean up after yourself
