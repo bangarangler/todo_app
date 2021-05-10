@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/bangarangler/todo_app/repository"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -18,21 +20,34 @@ func goDotEnvVar(key string) string {
 	return os.Getenv(key)
 }
 
-var port = goDotEnvVar("PORT")
+var (
+	port = goDotEnvVar("PORT")
+	r    = repository.NewRepository()
+)
 
-func handleFunc(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprint(w, "Hello, Golang ❤️")
+func GetTodos(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"data": r.ListTodo()})
+}
+
+func AddTodo(c *gin.Context) {
+	var input repository.Todo
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	r.AddTodo(&input)
+	c.JSON(http.StatusOK, gin.H{"data": input})
 }
 
 func main() {
 	if port == "" {
 		port = strconv.Itoa(8080)
 	}
-
-	http.HandleFunc("/", handleFunc)
-
-	println(port)
-	log.Printf("todo_app running on http://localhost:%s", port)
-
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
+	router := gin.Default()
+	v1 := router.Group("/v1")
+	{
+		v1.GET("/todos", GetTodos)
+		v1.POST("/todos", AddTodo)
+	}
+	log.Fatal(router.Run(fmt.Sprintf(":%s", port)))
 }
